@@ -5,6 +5,6 @@ const { createCategory, getCategory } = require('../controllers/categoryControll
 
 router.route('/')
     .post([authorize, isadmin], createCategory)
-    .get(authorize, getCategory)
+    .get(getCategory)
 
 module.exports = router;

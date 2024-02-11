@@ -2,13 +2,15 @@ const { Category } = require('../models/category');
 module.exports.createCategory = async (req, res) => {
     try {
         const category = new Category({
-            name: req.name
+            name: req.body.name
         })
         const result = await category.save();
         return res.status(201).send({
             message: 'Category created successfully',
-            _id: result._id,
-            name: result.name
+            category: {
+                _id: result._id,
+                name: result.name
+            }
         });
     } catch (error) {
         console.log(error.message);
@@ -19,9 +21,9 @@ module.exports.createCategory = async (req, res) => {
 module.exports.getCategory = async (req, res) => {
     try {
         const category = await Category.find().sort({ name: 1 }).select({ _id: 1, name: 1 });
-        return res.status(500).send({
+        return res.status(201).send({
             message: "Categories got successfully",
-            categories: category
+            category: category
         })
     } catch (error) {
         console.log(error.message);

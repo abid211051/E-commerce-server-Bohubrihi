@@ -5,13 +5,22 @@ const cors = require('cors');
 const morgan = require('morgan');
 const userRouter = require('./routers/userRouter');
 const categoryRouter = require('./routers/categoryRouter');
-app.use(express.json());
+const productRouter = require('./routers/productRouter');
+const cartRouter = require('./routers/cartRouter');
+const profileRouter = require('./routers/profileRouter');
+
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('uploads'));
 
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
 app.use('/server/user', userRouter);
-app.use('/server/category', categoryRouter)
+app.use('/server/category', categoryRouter);
+app.use('/server/product', productRouter);
+app.use('/server/cart', cartRouter);
+app.use('/server/profile', profileRouter);
 module.exports = app;
