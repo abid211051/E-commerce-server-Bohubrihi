@@ -145,7 +145,7 @@ module.exports.ipn = async (req, res) => {
             const val_id = req.body.val_id;
             const tran_id = req.body.tran_id;
             const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-            sslcz.validate(req.body).then(data => {
+            sslcz.validate(val_id).then(data => {
                 console.log(data);
                 return res.status(201).send(data);
             });
