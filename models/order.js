@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose');
-const { CartSchema } = require('../models/cartItem');
+const { CartSchema } = require('./cartItem');
 
-const paymentSchema = Schema({
+const orderSchema = Schema({
     transactionId: { type: String, unique: true },
     customer: {
         deliveryAddress: {
@@ -26,4 +26,4 @@ const paymentSchema = Schema({
     paymentStatus: { type: String, default: "failed" },
     userId: { type: Schema.Types.ObjectId, ref: 'User' }
 })
-module.exports.Payment = model('Payment', paymentSchema);
+module.exports.Order = model('Order', orderSchema);
