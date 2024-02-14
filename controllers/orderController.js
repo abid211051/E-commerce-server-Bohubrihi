@@ -155,7 +155,7 @@ module.exports.onlineOrder = async (req, res) => {
 
 module.exports.ipn = async (req, res) => {
     try {
-        const order = await Order.findOne({ transactionId: data.tran_id });
+        const order = await Order.findOne({ transactionId: req.body.tran_id });
         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
         if (req.body.status === 'VALID') {
             const data = await sslcz.validate(req.body);
