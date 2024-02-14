@@ -95,10 +95,10 @@ module.exports.onlineOrder = async (req, res) => {
             total_amount: sum,
             currency: 'BDT',
             tran_id: tran_id, // use unique tran_id for each api call
-            success_url: 'http://localhost:3030/success',
-            fail_url: 'http://localhost:3030/fail',
-            cancel_url: 'http://localhost:3030/cancel',
-            ipn_url: 'http://localhost:3030/ipn',
+            success_url: 'https://e-commerce-server-drab.vercel.app/server/payment/success',
+            fail_url: 'https://e-commerce-server-drab.vercel.app/server/payment/fail',
+            cancel_url: 'https://e-commerce-server-drab.vercel.app/server/payment/cancel',
+            ipn_url: 'https://e-commerce-server-drab.vercel.app/server/payment/ipn',
             shipping_method: 'Courier',
             product_name: prod_name,
             product_category: prod_categ,
@@ -132,4 +132,9 @@ module.exports.onlineOrder = async (req, res) => {
         console.log(error.message);
         return res.status(500).send(error.message);
     }
+}
+
+module.exports.ipn = async (req, res) => {
+    console.log(req.body)
+    res.send('oj')
 }

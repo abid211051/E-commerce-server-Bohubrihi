@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const { getOrderHistory, offlineOrder, onlineOrder } = require('../controllers/orderController');
+const { getOrderHistory, offlineOrder, onlineOrder, ipn } = require('../controllers/orderController');
 const authorize = require('../middleware/authorize');
 
 router.route('/')
@@ -12,4 +12,6 @@ router.route('/offline')
 router.route('/online')
     .post(authorize, onlineOrder)
 
+router.route('/ipn')
+    .post(ipn)
 module.exports = router;
