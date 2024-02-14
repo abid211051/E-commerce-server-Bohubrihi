@@ -163,20 +163,20 @@ module.exports.ipn = async (req, res) => {
                 order.paymentStatus = 'Success';
                 await order.save();
                 res.status(201).send('ok');
-                const prod = order.cartitems.map((item) => {
-                    return { prod_id: item.product._id, count: item.count }
-                });
-                const updateOperation = prod.map((data) => (
-                    {
-                        updateOne: {
-                            filter: { _id: data.prod_id },
-                            update: { $inc: { sold: data.count } }
-                        }
-                    }
-                ));
-                await CartItem.deleteMany({ user: order.userId });
-                await Product.bulkWrite(updateOperation);
-                await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
+                // const prod = order.cartitems.map((item) => {
+                //     return { prod_id: item.product._id, count: item.count }
+                // });
+                // const updateOperation = prod.map((data) => (
+                //     {
+                //         updateOne: {
+                //             filter: { _id: data.prod_id },
+                //             update: { $inc: { sold: data.count } }
+                //         }
+                //     }
+                // ));
+                // await CartItem.deleteMany({ user: order.userId });
+                // await Product.bulkWrite(updateOperation);
+                // await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
             }
         }
         else {
