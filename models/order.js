@@ -23,7 +23,8 @@ const orderSchema = Schema({
     cartitems: [CartSchema],
     orderTime: { type: Date, default: new Date() },
     price: { type: Number },
-    paymentStatus: { type: String, default: "failed" },
-    userId: { type: Schema.Types.ObjectId, ref: 'User' }
+    paymentStatus: { type: String, default: "Failed", enum: ["Pending", "Success", "Failed"] },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    coupon: String
 })
 module.exports.Order = model('Order', orderSchema);

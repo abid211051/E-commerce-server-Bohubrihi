@@ -33,7 +33,8 @@ module.exports.offlineOrder = async (req, res) => {
             orderTime: new Date(),
             price: sum + 10,
             paymentStatus: 'Pending',
-            userId: req.user._id
+            userId: req.user._id,
+            coupon: req.body.coupon
         })
         await neworder.save();
         res.status(201).send({ url: 'http://localhost:5173/user/dashboard' });
@@ -122,14 +123,30 @@ module.exports.onlineOrder = async (req, res) => {
             ship_country: 'Bangladesh',
         };
         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
-        sslcz.init(data).then(apiResponse => {
-            // console.log(apiResponse)
-            // Redirect the user to payment gateway
-            let GatewayPageURL = apiResponse.GatewayPageURL
-            // res.redirect(GatewayPageURL)
-            console.log('Redirecting to: ', GatewayPageURL)
+        sslcz.init(data).then(async (apiResponse) => {
+            const neworder = new Order({
+                transactionId: tran_id,
+                customer: {
+                    deliveryAddress: profile,
+                    paymentType: 'online',
+                },
+                cartitems: [...cartitems],
+                orderTime: new Date(),
+                price: sum,
+                paymentStatus: 'Pending',
+                userId: req.user._id,
+                coupon: req.body.coupon
+            })
+            if (apiResponse.status === 'SUCCESS') {
+                await neworder.save();
+                let GatewayPageURL = apiResponse.GatewayPageURL
+                console.log('Redirecting to: ', GatewayPageURL)
+                res.redirect(GatewayPageURL)
+            }
+            else {
+                return res.status(400).send('Payment gateway failed to open!');
+            }
         });
-        return res.send(cartitems)
     } catch (error) {
         console.log(error.message);
         return res.status(500).send(error.message);
@@ -138,20 +155,34 @@ module.exports.onlineOrder = async (req, res) => {
 
 module.exports.ipn = async (req, res) => {
     try {
-        // const cartitems = await CartItem.find({ user: req.user._id })
-        // const profile = await Profile.findOne({ user: req.user._id });
+        const order = await Order.findOne({ transactionId: data.tran_id });
         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
         if (req.body.status === 'VALID') {
-            const val_id = req.body.val_id;
-            const tran_id = req.body.tran_id;
-            sslcz.validate(req.body).then(data => {
-                console.log(data);
-                return res.status(201).send(data);
-            });
+            const data = await sslcz.validate(req.body);
+            if (data.status === 'VALID') {
+                order.paymentStatus = 'Success';
+                await order.save();
+                res.status(201).send('ok');
+                const prod = order.cartitems.map((item) => {
+                    return { prod_id: item.product._id, count: item.count }
+                });
+                const updateOperation = prod.map((data) => (
+                    {
+                        updateOne: {
+                            filter: { _id: data.prod_id },
+                            update: { $inc: { sold: data.count } }
+                        }
+                    }
+                ));
+                await CartItem.deleteMany({ user: order.userId });
+                await Product.bulkWrite(updateOperation);
+                await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
+            }
         }
         else {
-
-            return res.status(500).send('faild');
+            order.paymentStatus = "Failed";
+            await order.save();
+            return res.status(500).send('failed');
         }
     } catch (error) {
         console.log(error.message);
