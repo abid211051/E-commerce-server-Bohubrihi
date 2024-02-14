@@ -137,15 +137,13 @@ module.exports.onlineOrder = async (req, res) => {
                 userId: req.user._id,
                 coupon: req.body.coupon
             })
-            sslcz.init(data).then(async (apiResponse) => {
-                // Redirect the user to payment gateway
-                if (apiResponse.status === "SUCCESS") {
-                    await neworder.save();
-                }
-                let GatewayPageURL = apiResponse.GatewayPageURL
-                console.log(GatewayPageURL)
-                res.status(200).send({ url: GatewayPageURL })
-            });
+            // Redirect the user to payment gateway
+            if (apiResponse.status === "SUCCESS") {
+                await neworder.save();
+            }
+            let GatewayPageURL = apiResponse.GatewayPageURL
+            console.log(GatewayPageURL)
+            res.status(200).send({ url: GatewayPageURL })
         });
     } catch (error) {
         console.log(error.message);
@@ -155,16 +153,17 @@ module.exports.onlineOrder = async (req, res) => {
 
 module.exports.success = async (req, res) => {
     try {
+        console.log(req.params.tran_id)
         const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
             $set: {
                 paymentStatus: 'Success'
             }
         })
         if (orderdata.modifiedCount > 0) {
-            res.redirect(`http://localhost:5173/user/dashboard`);
+            return res.redirect(`http://localhost:5173/user/dashboard`);
         }
     } catch (error) {
-        res.redirect(`http://localhost:5173/`);
+        return res.redirect(`http://localhost:5173/`);
     }
 }
 
