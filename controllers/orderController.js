@@ -140,12 +140,11 @@ module.exports.ipn = async (req, res) => {
     try {
         // const cartitems = await CartItem.find({ user: req.user._id })
         // const profile = await Profile.findOne({ user: req.user._id });
-        console.log(req.body.status)
+        const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
         if (req.body.status === 'VALID') {
             const val_id = req.body.val_id;
             const tran_id = req.body.tran_id;
-            const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-            sslcz.validate(val_id).then(data => {
+            sslcz.validate(req.body).then(data => {
                 console.log(data);
                 return res.status(201).send(data);
             });
