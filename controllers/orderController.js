@@ -157,29 +157,29 @@ module.exports.ipn = async (req, res) => {
     try {
         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
         if (req.body.status === 'VALID') {
-            const data = await sslcz.validate(req.body);
-            if (data.status === 'VALID') {
-                await Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' });
-                return res.status(201).send('ok')
-                // const prod = order.cartitems.map((item) => {
-                //     return { prod_id: item.product._id, count: item.count }
-                // });
-                // const updateOperation = prod.map((data) => (
-                //     {
-                //         updateOne: {
-                //             filter: { _id: data.prod_id },
-                //             update: { $inc: { sold: data.count } }
-                //         }
-                //     }
-                // ));
-                // await CartItem.deleteMany({ user: order.userId });
-                // await Product.bulkWrite(updateOperation);
-                // await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
-            }
+            sslcz.validate(req.body).then(data => {
+                if (data.status === 'VALID') {
+                    Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' })
+                        .then(result => res.status(201).send('ok'))
+                        .catch(err => res.status(400).send('failed'));
+                }
+            });
+            // const prod = order.cartitems.map((item) => {
+            //     return { prod_id: item.product._id, count: item.count }
+            // });
+            // const updateOperation = prod.map((data) => (
+            //     {
+            //         updateOne: {
+            //             filter: { _id: data.prod_id },
+            //             update: { $inc: { sold: data.count } }
+            //         }
+            //     }
+            // ));
+            // await CartItem.deleteMany({ user: order.userId });
+            // await Product.bulkWrite(updateOperation);
+            // await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
         }
         else {
-            order.paymentStatus = "Failed";
-            await order.save();
             return res.status(500).send('failed');
         }
     } catch (error) {
