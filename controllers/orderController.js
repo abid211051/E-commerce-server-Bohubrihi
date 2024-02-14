@@ -137,7 +137,21 @@ module.exports.onlineOrder = async (req, res) => {
 }
 
 module.exports.ipn = async (req, res) => {
-
-    console.log(req.body)
-    res.status(507).send('oj')
+    try {
+        const cartitems = await CartItem.find({ user: req.user._id })
+        const profile = await Profile.findOne({ user: req.user._id });
+        if (req.body.status === 'VALID') {
+            const val_id = req.body.val_id;
+            const tran_id = req.body.tran_id;
+            const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+            sslcz.validate(req.body).then(data => {
+                console.log(data);
+                return res.status(201).send(data);
+            });
+        }
+        return res.status(500).send('faild');
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send(error.message);
+    }
 }
