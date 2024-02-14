@@ -155,14 +155,12 @@ module.exports.onlineOrder = async (req, res) => {
 
 module.exports.ipn = async (req, res) => {
     try {
-        const order = await Order.findOne({ transactionId: req.body.tran_id });
         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
         if (req.body.status === 'VALID') {
             const data = await sslcz.validate(req.body);
             if (data.status === 'VALID') {
-                order.paymentStatus = 'Success';
-                await order.save();
-                res.status(201).send('ok');
+                await Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' });
+                return res.status(201).send('ok')
                 // const prod = order.cartitems.map((item) => {
                 //     return { prod_id: item.product._id, count: item.count }
                 // });
