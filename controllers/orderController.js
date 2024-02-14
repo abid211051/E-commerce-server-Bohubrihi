@@ -13,6 +13,7 @@ module.exports.offlineOrder = async (req, res) => {
     try {
         const tran_id = '_' + Math.random().toString(36).substring(2,) + (new Date()).getTime().toString(36);
         const cartitems = await CartItem.find({ user: req.user._id })
+            .populate({ path: 'product', select: 'name', populate: { path: 'category', select: 'name' } });
         const profile = await Profile.findOne({ user: req.user._id });
         const discount = await Coupon.findOne({ code: req.body.coupon }).select('discount');
         const arr = cartitems.map(Item => Item.price * Item.count);
@@ -103,6 +104,7 @@ module.exports.onlineOrder = async (req, res) => {
             product_name: prod_name,
             product_category: prod_categ,
             product_profile: 'general',
+            cartitems: [...cartitems],
             cus_name: req.user.name,
             cus_email: req.user.email,
             cus_add1: profile.address1,
@@ -122,10 +124,11 @@ module.exports.onlineOrder = async (req, res) => {
         };
         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
         sslcz.init(data).then(apiResponse => {
+            console.log(apiResponse)
             // Redirect the user to payment gateway
             let GatewayPageURL = apiResponse.GatewayPageURL
             // res.redirect(GatewayPageURL)
-            console.log('Redirecting to: ', GatewayPageURL)
+            // console.log('Redirecting to: ', GatewayPageURL)
         });
         return res.send(cartitems)
     } catch (error) {
