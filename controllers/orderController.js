@@ -160,10 +160,10 @@ module.exports.success = async (req, res) => {
             }
         })
         if (orderdata.modifiedCount > 0) {
-            return res.redirect(`http://localhost:5173/user/dashboard`);
+            res.status(200).send('ok')
         }
     } catch (error) {
-        return res.redirect(`http://localhost:5173/`);
+        res.status(501).send('faild');
     }
 }
 
