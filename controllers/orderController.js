@@ -149,7 +149,10 @@ module.exports.ipn = async (req, res) => {
                 return res.status(201).send(data);
             });
         }
-        return res.status(500).send('faild');
+        else {
+
+            return res.status(500).send('faild');
+        }
     } catch (error) {
         console.log(error.message);
         return res.status(500).send(error.message);
