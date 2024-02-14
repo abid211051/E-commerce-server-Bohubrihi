@@ -12,6 +12,14 @@ router.route('/offline')
 router.route('/online')
     .post(authorize, onlineOrder)
 
-router.route('/ipn')
-    .post(ipn)
+router.route('/success/:tran_id')
+    .post()
+
+router.route('/fail/:tran_id')
+    .post()
+
+router.route('/cancel/:tran_id')
+    .post()
+// router.route('/ipn')
+//     .post(ipn)
 module.exports = router;

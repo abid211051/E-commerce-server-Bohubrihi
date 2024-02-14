@@ -97,9 +97,9 @@ module.exports.onlineOrder = async (req, res) => {
             total_amount: sum,
             currency: 'BDT',
             tran_id: tran_id, // use unique tran_id for each api call
-            success_url: 'https://e-commerce-server-drab.vercel.app/server/payment/success',
-            fail_url: 'https://e-commerce-server-drab.vercel.app/server/payment/fail',
-            cancel_url: 'https://e-commerce-server-drab.vercel.app/server/payment/cancel',
+            success_url: `https://e-commerce-server-drab.vercel.app/server/payment/success/${tran_id}`,
+            fail_url: `https://e-commerce-server-drab.vercel.app/server/payment/fail/${tran_id}`,
+            cancel_url: `https://e-commerce-server-drab.vercel.app/server/payment/cancel/${tran_id}`,
             ipn_url: 'https://e-commerce-server-drab.vercel.app/server/payment/ipn',
             shipping_method: 'Courier',
             product_name: prod_name,
@@ -137,15 +137,14 @@ module.exports.onlineOrder = async (req, res) => {
                 userId: req.user._id,
                 coupon: req.body.coupon
             })
-            if (apiResponse.status === 'SUCCESS') {
-                await neworder.save();
+            sslcz.init(data).then(async (apiResponse) => {
+                // Redirect the user to payment gateway
+                if (apiResponse.status === "SUCCESS") {
+                    await neworder.save();
+                }
                 let GatewayPageURL = apiResponse.GatewayPageURL
-                console.log('Redirecting to: ', GatewayPageURL)
-                res.redirect(GatewayPageURL)
-            }
-            else {
-                return res.status(400).send('Payment gateway failed to open!');
-            }
+                res.status(200).send({ url: GatewayPageURL })
+            });
         });
     } catch (error) {
         console.log(error.message);
@@ -153,37 +152,69 @@ module.exports.onlineOrder = async (req, res) => {
     }
 }
 
-module.exports.ipn = async (req, res) => {
+module.exports.success = async (req, res) => {
     try {
-        const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-        if (req.body.status === 'VALID') {
-            sslcz.validate(req.body).then(data => {
-                if (data.status === 'VALID') {
-                    Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' })
-                        .then(result => res.status(201).send('ok'))
-                        .catch(err => res.status(400).send('failed'));
-                }
-            });
-            // const prod = order.cartitems.map((item) => {
-            //     return { prod_id: item.product._id, count: item.count }
-            // });
-            // const updateOperation = prod.map((data) => (
-            //     {
-            //         updateOne: {
-            //             filter: { _id: data.prod_id },
-            //             update: { $inc: { sold: data.count } }
-            //         }
-            //     }
-            // ));
-            // await CartItem.deleteMany({ user: order.userId });
-            // await Product.bulkWrite(updateOperation);
-            // await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
-        }
-        else {
-            return res.status(500).send('failed');
+        const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
+            $set: {
+                paymentStatus: 'Success'
+            }
+        })
+        if (orderdata.modifiedCount > 0) {
+            res.redirect(`http://localhost:5173/user/dashboard`);
         }
     } catch (error) {
-        console.log(error.message);
-        return res.status(500).send(error.message);
+        res.redirect(`http://localhost:5173/`);
     }
 }
+
+module.exports.fail = async (req, res) => {
+
+}
+
+module.exports.cancel = async (req, res) => {
+
+}
+
+
+
+
+
+
+
+
+
+
+// module.exports.ipn = async (req, res) => {
+//     try {
+// const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+// if (req.body.status === 'VALID') {
+//     sslcz.validate(req.body).then(data => {
+//         if (data.status === 'VALID') {
+//             Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' })
+//                 .then(result => res.status(201).send('ok'))
+//                 .catch(err => res.status(400).send('failed'));
+//         }
+//     });
+// const prod = order.cartitems.map((item) => {
+//     return { prod_id: item.product._id, count: item.count }
+// });
+// const updateOperation = prod.map((data) => (
+//     {
+//         updateOne: {
+//             filter: { _id: data.prod_id },
+//             update: { $inc: { sold: data.count } }
+//         }
+//     }
+// ));
+// await CartItem.deleteMany({ user: order.userId });
+// await Product.bulkWrite(updateOperation);
+// await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
+// }
+// else {
+//     return res.status(500).send('failed');
+// }
+// } catch (error) {
+//     console.log(error.message);
+//     return res.status(500).send(error.message);
+// }
+// }
