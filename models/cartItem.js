@@ -15,7 +15,7 @@ const CartSchema = Schema({
     },
     user: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Profile',
         required: [true, "Need a UserID"]
     }
 }, { timestamps: true });

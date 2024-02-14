@@ -13,7 +13,7 @@ const profileSchema = Schema({
     city: String,
     state: String,
     postcode: Number,
-    country: String
+    // country: String
 }, { timestamps: true });
 
 

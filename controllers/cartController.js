@@ -32,7 +32,6 @@ module.exports.getCartItem = async (req, res) => {
         })
             .populate('product', 'name photo')
             .populate('user', 'name')
-        // console.log(cartItems)
         for (const key in cartItems) {
             cartItems[key].product['photo'] = `http://localhost:3001/${cartItems[key].product['photo']}`
         }
