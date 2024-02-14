@@ -143,6 +143,7 @@ module.exports.onlineOrder = async (req, res) => {
                     await neworder.save();
                 }
                 let GatewayPageURL = apiResponse.GatewayPageURL
+                console.log(GatewayPageURL)
                 res.status(200).send({ url: GatewayPageURL })
             });
         });
