@@ -140,6 +140,7 @@ module.exports.ipn = async (req, res) => {
     try {
         const cartitems = await CartItem.find({ user: req.user._id })
         const profile = await Profile.findOne({ user: req.user._id });
+        console.log(req.body.status)
         if (req.body.status === 'VALID') {
             const val_id = req.body.val_id;
             const tran_id = req.body.tran_id;
