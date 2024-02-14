@@ -104,7 +104,6 @@ module.exports.onlineOrder = async (req, res) => {
             product_name: prod_name,
             product_category: prod_categ,
             product_profile: 'general',
-            cartitems: [...cartitems],
             cus_name: req.user.name,
             cus_email: req.user.email,
             cus_add1: profile.address1,
@@ -124,11 +123,11 @@ module.exports.onlineOrder = async (req, res) => {
         };
         const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
         sslcz.init(data).then(apiResponse => {
-            console.log(apiResponse)
+            // console.log(apiResponse)
             // Redirect the user to payment gateway
             let GatewayPageURL = apiResponse.GatewayPageURL
             // res.redirect(GatewayPageURL)
-            // console.log('Redirecting to: ', GatewayPageURL)
+            console.log('Redirecting to: ', GatewayPageURL)
         });
         return res.send(cartitems)
     } catch (error) {
@@ -138,6 +137,7 @@ module.exports.onlineOrder = async (req, res) => {
 }
 
 module.exports.ipn = async (req, res) => {
+
     console.log(req.body)
     res.status(507).send('oj')
 }
