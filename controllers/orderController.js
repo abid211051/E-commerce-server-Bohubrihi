@@ -154,10 +154,11 @@ module.exports.onlineOrder = async (req, res) => {
 module.exports.success = async (req, res) => {
     try {
         let orderdata = Order.findOne({ transactionId: req.params.tran_id });
-        if (!orderdata) return res.status(404);
-        orderdata["paymentStatus"] = "Success";
-        await orderdata.save();
-        res.status(200)
+        // if (!orderdata) return res.status(404);
+        // console.log(first)
+        // orderdata["paymentStatus"] = "Success";
+        // await orderdata.save();
+        res.status(200).send(orderdata)
         // const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
         //     $set: {
         //         paymentStatus: 'Success'
