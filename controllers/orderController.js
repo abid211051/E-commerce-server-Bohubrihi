@@ -153,17 +153,17 @@ module.exports.onlineOrder = async (req, res) => {
 
 module.exports.success = async (req, res) => {
     try {
-        let orderdata = Order.findOne({ transactionId: req.params.tran_id });
+        // let orderdata = Order.findOne({ transactionId: req.params.tran_id });
+        const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
+            $set: {
+                paymentStatus: 'Success'
+            }
+        })
         // if (!orderdata) return res.status(404);
         // console.log(first)
         // orderdata["paymentStatus"] = "Success";
         // await orderdata.save();
         res.status(200).send(orderdata)
-        // const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
-        //     $set: {
-        //         paymentStatus: 'Success'
-        //     }
-        // })
         // if (orderdata.modifiedCount > 0) {
         //     res.status(200).send('ok')
         // }
