@@ -155,9 +155,9 @@ module.exports.success = async (req, res) => {
     try {
         let orderdata = Order.findOne({ transactionId: req.params.tran_id });
         if (!orderdata) return res.status(404);
-        orderdata.paymentStatus = "Success";
+        orderdata["paymentStatus"] = "Success";
         await orderdata.save();
-        return res.status(200)
+        res.status(200)
         // const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
         //     $set: {
         //         paymentStatus: 'Success'
