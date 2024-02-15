@@ -153,22 +153,18 @@ module.exports.onlineOrder = async (req, res) => {
 
 module.exports.success = async (req, res) => {
     try {
-        // let orderdata = Order.findOne({ transactionId: req.params.tran_id });
+        console.log(req.body);
+        console.log(req.params.tran_id)
         const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
             $set: {
-                paymentStatus: 'Success'
+                paymentStatus: "Paid Successfully"
             }
         })
-        // if (!orderdata) return res.status(404);
-        // console.log(first)
-        // orderdata["paymentStatus"] = "Success";
-        // await orderdata.save();
-        res.status(200).send(orderdata)
-        // if (orderdata.modifiedCount > 0) {
-        //     res.status(200).send('ok')
-        // }
+        if (orderdata.modifiedCount > 0) {
+            res.redirect(`https://master--grand-brioche-503f76.netlify.app/user/dashboard`);
+        }
     } catch (error) {
-        res.status(501).send('faild');
+        res.redirect(`https://master--grand-brioche-503f76.netlify.app/`);
     }
 }
 
