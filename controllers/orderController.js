@@ -157,7 +157,7 @@ module.exports.success = async (req, res) => {
         if (orderdata) {
             res.redirect(`https://master--grand-brioche-503f76.netlify.app/user/dashboard`);
             const prod = orderdata.cartitems.map((item) => {
-                return { prod_id: item.product._id, count: item.count }
+                return { prod_id: item.product, count: item.count }
             });
             const updateOperation = prod.map((data) => (
                 {
