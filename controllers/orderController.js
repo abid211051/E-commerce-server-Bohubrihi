@@ -153,15 +153,23 @@ module.exports.onlineOrder = async (req, res) => {
 
 module.exports.success = async (req, res) => {
     try {
-        console.log(req.body);
-        console.log(req.params.tran_id)
-        const orderdata = await Order.updateOne({ transactionId: req.params.tran_id }, {
-            $set: {
-                paymentStatus: "Paid Successfully"
-            }
-        })
-        if (orderdata.modifiedCount > 0) {
+        const orderdata = await Order.findOne({ transactionId: req.params.tran_id });
+        if (orderdata) {
             res.redirect(`https://master--grand-brioche-503f76.netlify.app/user/dashboard`);
+            const prod = orderdata.cartitems.map((item) => {
+                return { prod_id: item.product._id, count: item.count }
+            });
+            const updateOperation = prod.map((data) => (
+                {
+                    updateOne: {
+                        filter: { _id: data.prod_id },
+                        update: { $inc: { sold: data.count } }
+                    }
+                }
+            ));
+            await CartItem.deleteMany({ user: orderdata.userId });
+            await Product.bulkWrite(updateOperation);
+            await Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } });
         }
     } catch (error) {
         res.redirect(`https://master--grand-brioche-503f76.netlify.app/`);
@@ -185,37 +193,23 @@ module.exports.cancel = async (req, res) => {
 
 
 
-// module.exports.ipn = async (req, res) => {
-//     try {
-// const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-// if (req.body.status === 'VALID') {
-//     sslcz.validate(req.body).then(data => {
-//         if (data.status === 'VALID') {
-//             Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' })
-//                 .then(result => res.status(201).send('ok'))
-//                 .catch(err => res.status(400).send('failed'));
-//         }
-//     });
-// const prod = order.cartitems.map((item) => {
-//     return { prod_id: item.product._id, count: item.count }
-// });
-// const updateOperation = prod.map((data) => (
-//     {
-//         updateOne: {
-//             filter: { _id: data.prod_id },
-//             update: { $inc: { sold: data.count } }
-//         }
-//     }
-// ));
-// await CartItem.deleteMany({ user: order.userId });
-// await Product.bulkWrite(updateOperation);
-// await Coupon.updateOne({ code: order.coupon }, { $addToSet: { user: order.userId } });
-// }
-// else {
-//     return res.status(500).send('failed');
-// }
-// } catch (error) {
-//     console.log(error.message);
-//     return res.status(500).send(error.message);
-// }
-// }
+module.exports.ipn = async (req, res) => {
+    try {
+        const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+        if (req.body.status === 'VALID') {
+            sslcz.validate(req.body).then(data => {
+                if (data.status === 'VALID') {
+                    Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' })
+                        .then(result => res.status(201).send('ok'))
+                        .catch(err => res.status(400).send('failed'));
+                }
+            });
+        }
+        else {
+            return res.status(500).send('failed');
+        }
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send(error.message);
+    }
+}

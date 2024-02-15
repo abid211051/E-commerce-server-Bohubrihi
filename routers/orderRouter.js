@@ -20,6 +20,7 @@ router.route('/fail/:tran_id')
 
 router.route('/cancel/:tran_id')
     .post(cancel)
-// router.route('/ipn')
-//     .post(ipn)
+
+router.route('/ipn')
+    .post(ipn)
 module.exports = router;
