@@ -155,7 +155,7 @@ module.exports.success = async (req, res) => {
     try {
         const orderdata = await Order.findOne({ transactionId: req.params.tran_id });
         if (orderdata) {
-            res.redirect(`https://master--grand-brioche-503f76.netlify.app/user/dashboard`);
+            res.redirect(`https://dom-store-e-commerce.netlify.app/user/dashboard`);
             const prod = orderdata.cartitems.map((item) => {
                 return { prod_id: item.product, count: item.count }
             });
@@ -167,12 +167,23 @@ module.exports.success = async (req, res) => {
                     }
                 }
             ));
-            await CartItem.deleteMany({ user: orderdata.userId });
-            await Product.bulkWrite(updateOperation);
-            await Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } });
+            Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } })
+                .then(() => {
+                    return CartItem.deleteMany({ user: orderdata.userId })
+                        .then(() => {
+                            return Product.bulkWrite(updateOperation)
+                                .then(() => res.status(201).send('ok'))
+                                .catch(err => res.status(500).send('fail'))
+                        })
+                        .catch((err) => res.status(500).send('fail'))
+                })
+                .catch((err) => res.status(500).send('fail'))
+            // await
+            //     await
+            //         await Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } });
         }
     } catch (error) {
-        res.redirect(`https://master--grand-brioche-503f76.netlify.app/`);
+        res.redirect(`https://dom-store-e-commerce.netlify.app/`);
     }
 }
 
