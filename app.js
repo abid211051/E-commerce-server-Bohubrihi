@@ -3,6 +3,12 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const morgan = require('morgan');
+
+app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('uploads'));
+
 const userRouter = require('./routers/userRouter');
 const categoryRouter = require('./routers/categoryRouter');
 const productRouter = require('./routers/productRouter');
@@ -12,10 +18,6 @@ const couponRouter = require('./routers/couponRouter');
 const orderRouter = require('./routers/orderRouter');
 const reviewRouter = require('./routers/reviewRouter');
 
-app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static('uploads'));
 
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
