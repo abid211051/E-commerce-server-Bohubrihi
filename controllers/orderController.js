@@ -188,11 +188,20 @@ module.exports.success = async (req, res) => {
 }
 
 module.exports.fail = async (req, res) => {
-
+    try {
+        console.log(req.body)
+    } catch (error) {
+        res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+    }
 }
 
 module.exports.cancel = async (req, res) => {
+    try {
+        console.log(req.body)
 
+    } catch (error) {
+        res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+    }
 }
 
 
