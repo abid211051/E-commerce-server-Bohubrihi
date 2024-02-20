@@ -189,7 +189,8 @@ module.exports.success = async (req, res) => {
 
 module.exports.fail = async (req, res) => {
     try {
-        console.log(req.body)
+        await Order.deleteOne({ transactionId: req.params.tran_id });
+        res.redirect(`https://dom-store-e-commerce.netlify.app/`)
     } catch (error) {
         res.redirect(`https://dom-store-e-commerce.netlify.app/`);
     }
@@ -197,8 +198,8 @@ module.exports.fail = async (req, res) => {
 
 module.exports.cancel = async (req, res) => {
     try {
-        console.log(req.body)
-
+        await Order.deleteOne({ transactionId: req.params.tran_id });
+        res.redirect(`https://dom-store-e-commerce.netlify.app/`)
     } catch (error) {
         res.redirect(`https://dom-store-e-commerce.netlify.app/`);
     }
