@@ -37,7 +37,7 @@ module.exports.offlineOrder = async (req, res) => {
             coupon: req.body.coupon
         })
         await neworder.save();
-        res.status(201).send({ url: 'http://localhost:5173/user/dashboard' });
+        res.status(201).send({ url: 'https://dom-store-e-commerce.netlify.app/user/dashboard' });
 
         const prod = cartitems.map((item) => {
             return { prod_id: item.product._id, count: item.count }
@@ -97,10 +97,10 @@ module.exports.onlineOrder = async (req, res) => {
             total_amount: sum,
             currency: 'BDT',
             tran_id: tran_id, // use unique tran_id for each api call
-            success_url: `https://e-commerce-server-six.vercel.app/server/payment/success/${tran_id}`,
-            fail_url: `https://e-commerce-server-six.vercel.app/server/payment/fail/${tran_id}`,
-            cancel_url: `https://e-commerce-server-six.vercel.app/server/payment/cancel/${tran_id}`,
-            ipn_url: 'https://e-commerce-server-six.vercel.app/server/payment/ipn',
+            success_url: `https://e-commerce-70e6.onrender.com/server/payment/success/${tran_id}`,
+            fail_url: `https://e-commerce-70e6.onrender.com/server/payment/fail/${tran_id}`,
+            cancel_url: `https://e-commerce-70e6.onrender.com/server/payment/cancel/${tran_id}`,
+            ipn_url: 'https://e-commerce-70e6.onrender.com/server/payment/ipn',
             shipping_method: 'Courier',
             product_name: prod_name,
             product_category: prod_categ,

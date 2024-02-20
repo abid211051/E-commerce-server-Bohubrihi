@@ -13,7 +13,7 @@ module.exports.createProduct = async (req, res) => {
             photo: req.files[0].filename
         })
         const result = await product.save();
-        const imageurl = `https://e-commerce-server-six.vercel.app/${req.files[0].filename}`;
+        const imageurl = `https://e-commerce-70e6.onrender.com/${req.files[0].filename}`;
         return res.status(201).send({
             message: 'Product added successfully',
             product: {
@@ -53,7 +53,7 @@ module.exports.getProducts = async (req, res) => {
         // .select({ photo: 0 })
 
         for (const item of product) {
-            item.photo = `https://e-commerce-server-six.vercel.app/${item.photo}`;
+            item.photo = `https://e-commerce-70e6.onrender.com/${item.photo}`;
         }
         return res.status(201).send({
             message: 'products got successfully',
@@ -75,7 +75,7 @@ module.exports.getProductById = async (req, res) => {
         const product = await Product.findById(prodId)
             .populate('category', 'name');
         if (!product) return res.status(400).send('No product in that ID');
-        product.photo = `https://e-commerce-server-six.vercel.app/${product.photo}`;
+        product.photo = `https://e-commerce-70e6.onrender.com/${product.photo}`;
         return res.status(201).send({
             message: 'product got successfully',
             product: product
@@ -115,7 +115,7 @@ module.exports.filterProduct = async (req, res) => {
         .populate('category', 'name');
 
     for (const item of product) {
-        item.photo = `https://e-commerce-server-six.vercel.app/${item.photo}`;
+        item.photo = `https://e-commerce-70e6.onrender.com/${item.photo}`;
     }
     return res.status(201).send({
         message: 'products got successfully',
