@@ -84,10 +84,11 @@ module.exports.onlineOrder = async (req, res) => {
         let prod_name = '';
         let prod_categ = '';
         for (const item of cartitems) {
-            sum += item.price;
+            sum += (item.price * item.count);
             prod_name += `${item.product.name}, `;
             prod_categ += `${item.product.category.name}, `
         }
+        console.log()
         if (discount) {
             if (discount.discount !== 0) {
                 sum = sum - (sum * (discount.discount / 100));
