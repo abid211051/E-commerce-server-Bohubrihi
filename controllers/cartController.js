@@ -33,7 +33,7 @@ module.exports.getCartItem = async (req, res) => {
             .populate('product', 'name photo')
             .populate('user', 'name')
         for (const key in cartItems) {
-            cartItems[key].product['photo'] = `http://localhost:3001/${cartItems[key].product['photo']}`
+            cartItems[key].product['photo'] = `https://e-commerce-70e6.onrender.com/${cartItems[key].product['photo']}`
         }
         return res.status(200).send(cartItems);
     } catch (error) {
