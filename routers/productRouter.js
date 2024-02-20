@@ -2,7 +2,7 @@ const router = require('express').Router();
 const { createProduct, getProductById, getProducts, updateProduct, filterProduct } = require('../controllers/productController');
 const isadmin = require('../middleware/isadmin');
 const authorize = require('../middleware/authorize');
-const uploads = require('../middleware/multer');
+const uploads = require('../multer');
 
 router.route('/')
     .post([authorize, isadmin], uploads.array("photo"), createProduct)
