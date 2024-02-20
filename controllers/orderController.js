@@ -88,7 +88,6 @@ module.exports.onlineOrder = async (req, res) => {
             prod_name += `${item.product.name}, `;
             prod_categ += `${item.product.category.name}, `
         }
-        console.log()
         if (discount) {
             if (discount.discount !== 0) {
                 sum = sum - (sum * (discount.discount / 100));
