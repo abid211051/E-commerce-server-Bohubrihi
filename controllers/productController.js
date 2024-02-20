@@ -108,7 +108,6 @@ module.exports.filterProduct = async (req, res) => {
             }
         }
     }
-
     const product = await Product.find({ $and: [search, obj] })
         .sort({ [sortBy]: order })
         .limit(limit)
