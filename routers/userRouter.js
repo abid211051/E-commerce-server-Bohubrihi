@@ -6,5 +6,4 @@ router.route('/signup')
 
 router.route('/signin')
     .post(signIn)
-
 module.exports = router;

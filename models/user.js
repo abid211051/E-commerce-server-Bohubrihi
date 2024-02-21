@@ -10,12 +10,16 @@ const userSchema = Schema({
     },
     email: {
         type: String,
-        required: true,
-        unique: [true, "Email already Exist"]
     },
     password: {
         type: String,
         minlength: 6,
+    },
+    googleid: {
+        type: String
+    },
+    facebookid: {
+        type: String
     },
     role: {
         type: String,
