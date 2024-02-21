@@ -9,8 +9,8 @@ router.route('/')
 router.route('/callback')
     .get(passport.authenticate('facebook', { session: false }), (req, res) => {
         if (req.user.token !== null || req.user.token !== undefined || req.user.token !== '')
-            return res.redirect(`http://localhost:5173?token=${req.user.token}`);
-        return res.redirect(`http://localhost:5173/login`);
+            return res.redirect(`https://dom-store-e-commerce.netlify.app?token=${req.user.token}`);
+        return res.redirect(`https://dom-store-e-commerce.netlify.app/login`);
     })
 
 module.exports = router;
