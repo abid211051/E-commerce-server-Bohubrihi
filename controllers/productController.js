@@ -35,7 +35,7 @@ module.exports.createProduct = async (req, res) => {
   }
 };
 
-// query string: http://localhost:3001/server/product?order=desc&sortBy=price&limit=5&search='abc'
+// query string: https://e-commerce-server-bohubrihi.vercel.app/server/product?order=desc&sortBy=price&limit=5&search='abc'
 module.exports.getProducts = async (req, res) => {
   try {
     let order = req.query.order === "desc" ? -1 : 1;
