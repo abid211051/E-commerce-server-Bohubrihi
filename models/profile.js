@@ -1,11 +1,12 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
-const profileSchema = Schema({
+const profileSchema = Schema(
+  {
     user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        unique: true,
-        required: [true, "Need a UserID"]
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      unique: true,
+      required: [true, "Need a UserID"],
     },
     phone: String,
     address1: String,
@@ -13,8 +14,8 @@ const profileSchema = Schema({
     city: String,
     state: String,
     postcode: Number,
-    // country: String
-}, { timestamps: true });
+  },
+  { timestamps: true }
+);
 
-
-module.exports.Profile = model('Profile', profileSchema);
+module.exports.Profile = model("Profile", profileSchema);
