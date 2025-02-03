@@ -1,236 +1,251 @@
-const { CartItem } = require('../models/cartItem');
-const { Profile } = require('../models/profile');
-const { Order } = require('../models/order');
-const { Product } = require('../models/product');
-const { Coupon } = require('../models/coupon');
+const { CartItem } = require("../models/cartItem");
+const { Profile } = require("../models/profile");
+const { Order } = require("../models/order");
+const { Product } = require("../models/product");
+const { Coupon } = require("../models/coupon");
 
-const SSLCommerzPayment = require('sslcommerz-lts');
+const SSLCommerzPayment = require("sslcommerz-lts");
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASS;
-const is_live = false
+const is_live = false;
 
 module.exports.offlineOrder = async (req, res) => {
-    try {
-        const tran_id = '_' + Math.random().toString(36).substring(2,) + (new Date()).getTime().toString(36);
-        const cartitems = await CartItem.find({ user: req.user._id })
-            .populate({ path: 'product', select: 'name', populate: { path: 'category', select: 'name' } });
-        const profile = await Profile.findOne({ user: req.user._id });
-        const discount = await Coupon.findOne({ code: req.body.coupon }).select('discount');
-        const arr = cartitems.map(Item => Item.price * Item.count);
-        let sum = arr.reduce((a, b) => a + b, 0);
-        if (discount) {
-            if (discount.discount !== 0) {
-                sum = sum - (sum * (discount.discount / 100));
-            }
-        }
-        const neworder = new Order({
-            transactionId: tran_id,
-            customer: {
-                deliveryAddress: profile,
-                paymentType: 'Cash on Delivery',
-            },
-            cartitems: [...cartitems],
-            orderTime: new Date(),
-            price: sum + 10,
-            paymentStatus: 'Pending',
-            userId: req.user._id,
-            coupon: req.body.coupon
-        })
-        await neworder.save();
-        res.status(201).send({ url: 'https://dom-store-e-commerce.netlify.app/user/dashboard' });
-
-        const prod = cartitems.map((item) => {
-            return { prod_id: item.product._id, count: item.count }
-        });
-        const updateOperation = prod.map((data) => (
-            {
-                updateOne: {
-                    filter: { _id: data.prod_id },
-                    update: { $inc: { sold: data.count } }
-                }
-            }
-        ));
-        await CartItem.deleteMany({ user: req.user._id })
-        await Product.bulkWrite(updateOperation);
-        await Coupon.updateOne({ code: req.body.coupon }, { $addToSet: { user: req.user._id } });
-    } catch (error) {
-        console.log(error.message);
-        return res.status(500).send(error.message);
+  try {
+    const tran_id =
+      "_" +
+      Math.random().toString(36).substring(2) +
+      new Date().getTime().toString(36);
+    const cartitems = await CartItem.find({ user: req.user._id }).populate({
+      path: "product",
+      select: "name",
+      populate: { path: "category", select: "name" },
+    });
+    const profile = await Profile.findOne({ user: req.user._id });
+    const discount = await Coupon.findOne({ code: req.body.coupon }).select(
+      "discount"
+    );
+    const arr = cartitems.map((Item) => Item.price * Item.count);
+    let sum = arr.reduce((a, b) => a + b, 0);
+    if (discount) {
+      if (discount.discount !== 0) {
+        sum = sum - sum * (discount.discount / 100);
+      }
     }
-}
+    const neworder = new Order({
+      transactionId: tran_id,
+      customer: {
+        deliveryAddress: profile,
+        paymentType: "Cash on Delivery",
+      },
+      cartitems: [...cartitems],
+      orderTime: new Date(),
+      price: sum + 10,
+      paymentStatus: "Pending",
+      userId: req.user._id,
+      coupon: req.body.coupon,
+    });
+    await neworder.save();
+    res
+      .status(201)
+      .send({ url: "https://dom-store-e-commerce.netlify.app/user/dashboard" });
 
+    const prod = cartitems.map((item) => {
+      return { prod_id: item.product._id, count: item.count };
+    });
+    const updateOperation = prod.map((data) => ({
+      updateOne: {
+        filter: { _id: data.prod_id },
+        update: { $inc: { sold: data.count } },
+      },
+    }));
+    await CartItem.deleteMany({ user: req.user._id });
+    await Product.bulkWrite(updateOperation);
+    await Coupon.updateOne(
+      { code: req.body.coupon },
+      { $addToSet: { user: req.user._id } }
+    );
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send(error.message);
+  }
+};
 
 module.exports.getOrderHistory = async (req, res) => {
-    try {
-        const history = await Order.find({ userId: req.user._id })
-            .populate({ path: 'cartitems', populate: { path: 'product', select: 'name' } })
-        return res.status(201).send(history);
-    } catch (error) {
-        console.log(error.message);
-        return res.status(500).send(error.message);
-    }
-}
-
+  try {
+    const history = await Order.find({ userId: req.user._id }).populate({
+      path: "cartitems",
+      populate: { path: "product", select: "name" },
+    });
+    return res.status(201).send(history);
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send(error.message);
+  }
+};
 
 module.exports.onlineOrder = async (req, res) => {
-    try {
-        const tran_id = '_' + Math.random().toString(36).substring(2,) + (new Date()).getTime().toString(36);
-        const cartitems = await CartItem.find({ user: req.user._id })
-            .populate({ path: 'product', select: 'name', populate: { path: 'category', select: 'name' } });
-        const profile = await Profile.findOne({ user: req.user._id });
-        const discount = await Coupon.findOne({ code: req.body.coupon }).select('discount');
+  try {
+    const tran_id =
+      "_" +
+      Math.random().toString(36).substring(2) +
+      new Date().getTime().toString(36);
+    const cartitems = await CartItem.find({ user: req.user._id }).populate({
+      path: "product",
+      select: "name",
+      populate: { path: "category", select: "name" },
+    });
+    const profile = await Profile.findOne({ user: req.user._id });
+    const discount = await Coupon.findOne({ code: req.body.coupon }).select(
+      "discount"
+    );
 
-        let sum = 0;
-        let prod_name = '';
-        let prod_categ = '';
-        for (const item of cartitems) {
-            sum += (item.price * item.count);
-            prod_name += `${item.product.name}, `;
-            prod_categ += `${item.product.category.name}, `
-        }
-        if (discount) {
-            if (discount.discount !== 0) {
-                sum = sum - (sum * (discount.discount / 100));
-            }
-        }
-        const data = {
-            total_amount: sum,
-            currency: 'BDT',
-            tran_id: tran_id, // use unique tran_id for each api call
-            success_url: `https://e-commerce-70e6.onrender.com/server/payment/success/${tran_id}`,
-            fail_url: `https://e-commerce-70e6.onrender.com/server/payment/fail/${tran_id}`,
-            cancel_url: `https://e-commerce-70e6.onrender.com/server/payment/cancel/${tran_id}`,
-            ipn_url: 'https://e-commerce-70e6.onrender.com/server/payment/ipn',
-            shipping_method: 'Courier',
-            product_name: prod_name,
-            product_category: prod_categ,
-            product_profile: 'general',
-            cus_name: req.user.name,
-            cus_email: req.user.email,
-            cus_add1: profile.address1,
-            cus_add2: profile.address2,
-            cus_city: profile.city,
-            cus_state: profile.state,
-            cus_postcode: profile.postcode,
-            cus_country: 'Bangladesh',
-            cus_phone: profile.phone,
-            ship_name: req.user.name,
-            ship_add1: profile.address1,
-            ship_add2: profile.address2,
-            ship_city: profile.city,
-            ship_state: profile.state,
-            ship_postcode: profile.postcode,
-            ship_country: 'Bangladesh',
-        };
-        const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live)
-        sslcz.init(data).then(async (apiResponse) => {
-            const neworder = new Order({
-                transactionId: tran_id,
-                customer: {
-                    deliveryAddress: profile,
-                    paymentType: 'online',
-                },
-                cartitems: [...cartitems],
-                orderTime: new Date(),
-                price: sum,
-                paymentStatus: 'Pending',
-                userId: req.user._id,
-                coupon: req.body.coupon
-            })
-            // Redirect the user to payment gateway
-            if (apiResponse.status === "SUCCESS") {
-                await neworder.save();
-            }
-            let GatewayPageURL = apiResponse.GatewayPageURL
-            console.log(GatewayPageURL)
-            res.status(200).send({ url: GatewayPageURL })
-        });
-    } catch (error) {
-        console.log(error.message);
-        return res.status(500).send(error.message);
+    let sum = 0;
+    let prod_name = "";
+    let prod_categ = "";
+    for (const item of cartitems) {
+      sum += item.price * item.count;
+      prod_name += `${item.product.name}, `;
+      prod_categ += `${item.product.category.name}, `;
     }
-}
+    if (discount) {
+      if (discount.discount !== 0) {
+        sum = sum - sum * (discount.discount / 100);
+      }
+    }
+    const data = {
+      total_amount: sum,
+      currency: "BDT",
+      tran_id: tran_id, // use unique tran_id for each api call
+      success_url: `${process.env.URL}/server/payment/success/${tran_id}`,
+      fail_url: `${process.env.URL}/server/payment/fail/${tran_id}`,
+      cancel_url: `${process.env.URL}/server/payment/cancel/${tran_id}`,
+      ipn_url: `${process.env.URL}/server/payment/ipn`,
+      shipping_method: "Courier",
+      product_name: prod_name,
+      product_category: prod_categ,
+      product_profile: "general",
+      cus_name: req.user.name,
+      cus_email: req.user.email,
+      cus_add1: profile.address1,
+      cus_add2: profile.address2,
+      cus_city: profile.city,
+      cus_state: profile.state,
+      cus_postcode: profile.postcode,
+      cus_country: "Bangladesh",
+      cus_phone: profile.phone,
+      ship_name: req.user.name,
+      ship_add1: profile.address1,
+      ship_add2: profile.address2,
+      ship_city: profile.city,
+      ship_state: profile.state,
+      ship_postcode: profile.postcode,
+      ship_country: "Bangladesh",
+    };
+    const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+    sslcz.init(data).then(async (apiResponse) => {
+      const neworder = new Order({
+        transactionId: tran_id,
+        customer: {
+          deliveryAddress: profile,
+          paymentType: "online",
+        },
+        cartitems: [...cartitems],
+        orderTime: new Date(),
+        price: sum,
+        paymentStatus: "Pending",
+        userId: req.user._id,
+        coupon: req.body.coupon,
+      });
+      // Redirect the user to payment gateway
+      if (apiResponse.status === "SUCCESS") {
+        await neworder.save();
+      }
+      let GatewayPageURL = apiResponse.GatewayPageURL;
+      console.log(GatewayPageURL);
+      res.status(200).send({ url: GatewayPageURL });
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send(error.message);
+  }
+};
 
 module.exports.success = async (req, res) => {
-    try {
-        const orderdata = await Order.findOne({ transactionId: req.params.tran_id });
-        if (orderdata) {
-            res.redirect(`https://dom-store-e-commerce.netlify.app/user/dashboard`);
-            const prod = orderdata.cartitems.map((item) => {
-                return { prod_id: item.product, count: item.count }
-            });
-            const updateOperation = prod.map((data) => (
-                {
-                    updateOne: {
-                        filter: { _id: data.prod_id },
-                        update: { $inc: { sold: data.count } }
-                    }
-                }
-            ));
-            Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } })
-                .then(() => {
-                    return CartItem.deleteMany({ user: orderdata.userId })
-                        .then(() => {
-                            return Product.bulkWrite(updateOperation)
-                                .then(() => res.status(201).send('ok'))
-                                .catch(err => res.status(500).send('fail'))
-                        })
-                        .catch((err) => res.status(500).send('fail'))
-                })
-                .catch((err) => res.status(500).send('fail'))
-            // await
-            //     await
-            //         await Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } });
-        }
-    } catch (error) {
-        res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+  try {
+    const orderdata = await Order.findOne({
+      transactionId: req.params.tran_id,
+    });
+    if (orderdata) {
+      res.redirect(`https://dom-store-e-commerce.netlify.app/user/dashboard`);
+      const prod = orderdata.cartitems.map((item) => {
+        return { prod_id: item.product, count: item.count };
+      });
+      const updateOperation = prod.map((data) => ({
+        updateOne: {
+          filter: { _id: data.prod_id },
+          update: { $inc: { sold: data.count } },
+        },
+      }));
+      Coupon.updateOne(
+        { code: orderdata.coupon },
+        { $addToSet: { user: orderdata.userId } }
+      )
+        .then(() => {
+          return CartItem.deleteMany({ user: orderdata.userId })
+            .then(() => {
+              return Product.bulkWrite(updateOperation)
+                .then(() => res.status(201).send("ok"))
+                .catch((err) => res.status(500).send("fail"));
+            })
+            .catch((err) => res.status(500).send("fail"));
+        })
+        .catch((err) => res.status(500).send("fail"));
+      // await
+      //     await
+      //         await Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } });
     }
-}
+  } catch (error) {
+    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+  }
+};
 
 module.exports.fail = async (req, res) => {
-    try {
-        await Order.deleteOne({ transactionId: req.params.tran_id });
-        res.redirect(`https://dom-store-e-commerce.netlify.app/`)
-    } catch (error) {
-        res.redirect(`https://dom-store-e-commerce.netlify.app/`);
-    }
-}
+  try {
+    await Order.deleteOne({ transactionId: req.params.tran_id });
+    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+  } catch (error) {
+    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+  }
+};
 
 module.exports.cancel = async (req, res) => {
-    try {
-        await Order.deleteOne({ transactionId: req.params.tran_id });
-        res.redirect(`https://dom-store-e-commerce.netlify.app/`)
-    } catch (error) {
-        res.redirect(`https://dom-store-e-commerce.netlify.app/`);
-    }
-}
-
-
-
-
-
-
-
-
-
+  try {
+    await Order.deleteOne({ transactionId: req.params.tran_id });
+    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+  } catch (error) {
+    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+  }
+};
 
 module.exports.ipn = async (req, res) => {
-    try {
-        const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-        if (req.body.status === 'VALID') {
-            sslcz.validate(req.body).then(data => {
-                if (data.status === 'VALID') {
-                    Order.updateOne({ transactionId: req.body.tran_id }, { paymentStatus: 'Success' })
-                        .then(result => res.status(201).send('ok'))
-                        .catch(err => res.status(400).send('failed'));
-                }
-            });
+  try {
+    const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+    if (req.body.status === "VALID") {
+      sslcz.validate(req.body).then((data) => {
+        if (data.status === "VALID") {
+          Order.updateOne(
+            { transactionId: req.body.tran_id },
+            { paymentStatus: "Success" }
+          )
+            .then((result) => res.status(201).send("ok"))
+            .catch((err) => res.status(400).send("failed"));
         }
-        else {
-            return res.status(500).send('failed');
-        }
-    } catch (error) {
-        console.log(error.message);
-        return res.status(500).send(error.message);
+      });
+    } else {
+      return res.status(500).send("failed");
     }
-}
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).send(error.message);
+  }
+};
