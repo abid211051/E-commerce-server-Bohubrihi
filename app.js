@@ -24,14 +24,14 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-app.use("/server/user", userRouter);
-app.use("/server/category", categoryRouter);
-app.use("/server/product", productRouter);
-app.use("/server/cart", cartRouter);
-app.use("/server/profile", profileRouter);
-app.use("/server/coupon", couponRouter);
-app.use("/server/payment", orderRouter);
-app.use("/server/review", reviewRouter);
+app.use("/user", userRouter);
+app.use("/category", categoryRouter);
+app.use("/product", productRouter);
+app.use("/cart", cartRouter);
+app.use("/profile", profileRouter);
+app.use("/coupon", couponRouter);
+app.use("/payment", orderRouter);
+app.use("/review", reviewRouter);
 app.use("/auth/google", googleRouter);
 app.use("/auth/facebook", facebookRouter);
 module.exports = app;
