@@ -45,9 +45,7 @@ module.exports.offlineOrder = async (req, res) => {
       coupon: req.body.coupon,
     });
     await neworder.save();
-    res
-      .status(201)
-      .send({ url: "https://dom-store-e-commerce.netlify.app/user/dashboard" });
+    res.status(201).send({ url: `${process.env.CLIENT_URL}/user/dashboard` });
 
     const prod = cartitems.map((item) => {
       return { prod_id: item.product._id, count: item.count };
@@ -176,7 +174,7 @@ module.exports.success = async (req, res) => {
       transactionId: req.params.tran_id,
     });
     if (orderdata) {
-      res.redirect(`https://dom-store-e-commerce.netlify.app/user/dashboard`);
+      res.redirect(`${process.env.CLIENT_URL}/user/dashboard`);
       const prod = orderdata.cartitems.map((item) => {
         return { prod_id: item.product, count: item.count };
       });
@@ -205,25 +203,25 @@ module.exports.success = async (req, res) => {
       //         await Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } });
     }
   } catch (error) {
-    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+    res.redirect(`${process.env.CLIENT_URL}/`);
   }
 };
 
 module.exports.fail = async (req, res) => {
   try {
     await Order.deleteOne({ transactionId: req.params.tran_id });
-    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+    res.redirect(`${process.env.CLIENT_URL}/`);
   } catch (error) {
-    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+    res.redirect(`${process.env.CLIENT_URL}/`);
   }
 };
 
 module.exports.cancel = async (req, res) => {
   try {
     await Order.deleteOne({ transactionId: req.params.tran_id });
-    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+    res.redirect(`${process.env.CLIENT_URL}/`);
   } catch (error) {
-    res.redirect(`https://dom-store-e-commerce.netlify.app/`);
+    res.redirect(`${process.env.CLIENT_URL}/`);
   }
 };
 
