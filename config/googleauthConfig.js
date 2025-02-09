@@ -9,8 +9,6 @@ const Strategy = new GoogleStrategy(
     callbackURL: `${process.env.URL}/auth/google/redirect`,
   },
   async (accessToken, refreshToken, profile, cb) => {
-    console.log("EeEE");
-
     try {
       const user = await User.findOne({
         googleid: profile.id,

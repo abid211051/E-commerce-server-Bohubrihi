@@ -14,10 +14,8 @@ router
       req.user.token !== undefined ||
       req.user.token !== ""
     )
-      return res.redirect(
-        `https://dom-store-e-commerce.netlify.app?token=${req.user.token}`
-      );
-    return res.redirect(`https://dom-store-e-commerce.netlify.app/login`);
+      return res.redirect(`${process.env.CLIENT_URL}?token=${req.user.token}`);
+    return res.redirect(`${process.env.CLIENT_URL}/login`);
   });
 
 module.exports = router;
