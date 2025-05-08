@@ -20,7 +20,6 @@ module.exports.createCartItem = async (req, res) => {
       cart: result,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send({
       error: error.message,
       message: "Something went wrong",
@@ -42,7 +41,6 @@ module.exports.getCartItem = async (req, res) => {
     }
     return res.status(200).send(cartItems);
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send({
       error: error.message,
       message: "Something went wrong",
@@ -73,7 +71,6 @@ module.exports.deleteCartItem = async (req, res) => {
     await CartItem.deleteOne({ _id: _id, user: userId });
     return res.status(200).send("Deleted!");
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send({
       error: error.message,
       message: "Something went wrong",

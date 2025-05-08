@@ -63,7 +63,6 @@ module.exports.offlineOrder = async (req, res) => {
       { $addToSet: { user: req.user._id } }
     );
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send(error.message);
   }
 };
@@ -76,7 +75,6 @@ module.exports.getOrderHistory = async (req, res) => {
     });
     return res.status(201).send(history);
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send(error.message);
   }
 };
@@ -163,7 +161,6 @@ module.exports.onlineOrder = async (req, res) => {
       res.status(200).send({ url: GatewayPageURL });
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send(error.message);
   }
 };
@@ -173,37 +170,34 @@ module.exports.success = async (req, res) => {
     const orderdata = await Order.findOne({
       transactionId: req.params.tran_id,
     });
-    if (orderdata) {
-      res.redirect(`${process.env.CLIENT_URL}/user/dashboard`);
-      const prod = orderdata.cartitems.map((item) => {
-        return { prod_id: item.product, count: item.count };
-      });
-      const updateOperation = prod.map((data) => ({
-        updateOne: {
-          filter: { _id: data.prod_id },
-          update: { $inc: { sold: data.count } },
-        },
-      }));
-      Coupon.updateOne(
-        { code: orderdata.coupon },
-        { $addToSet: { user: orderdata.userId } }
-      )
-        .then(() => {
-          return CartItem.deleteMany({ user: orderdata.userId })
-            .then(() => {
-              return Product.bulkWrite(updateOperation)
-                .then(() => res.status(201).send("ok"))
-                .catch((err) => res.status(500).send("fail"));
-            })
-            .catch((err) => res.status(500).send("fail"));
-        })
-        .catch((err) => res.status(500).send("fail"));
-      // await
-      //     await
-      //         await Coupon.updateOne({ code: orderdata.coupon }, { $addToSet: { user: orderdata.userId } });
+
+    if (!orderdata) {
+      return res.redirect(`${process.env.CLIENT_URL}/`);
     }
+
+    const prod = orderdata.cartitems.map((item) => ({
+      prod_id: item.product,
+      count: item.count,
+    }));
+
+    const updateOperation = prod.map((data) => ({
+      updateOne: {
+        filter: { _id: data.prod_id },
+        update: { $inc: { sold: data.count } },
+      },
+    }));
+
+    await Coupon.updateOne(
+      { code: orderdata.coupon },
+      { $addToSet: { user: orderdata.userId } }
+    );
+
+    await CartItem.deleteMany({ user: orderdata.userId });
+    await Product.bulkWrite(updateOperation);
+
+    return res.redirect(`${process.env.CLIENT_URL}/user/dashboard`);
   } catch (error) {
-    res.redirect(`${process.env.CLIENT_URL}/`);
+    return res.redirect(`${process.env.CLIENT_URL}/`);
   }
 };
 
@@ -243,7 +237,6 @@ module.exports.ipn = async (req, res) => {
       return res.status(500).send("failed");
     }
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send(error.message);
   }
 };

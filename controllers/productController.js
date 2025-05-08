@@ -10,6 +10,8 @@ module.exports.createProduct = async (req, res) => {
       price: req.body.price,
       category: req.body.category,
       quantity: req.body.quantity,
+      trending: req.body.trending !== "1" ? 0 : 1,
+      hot: req.body.hot !== "1" ? 0 : 1,
       photo: req.files[0].filename,
     });
     const result = await product.save();
@@ -24,10 +26,11 @@ module.exports.createProduct = async (req, res) => {
         category: result.category,
         quantity: result.quantity,
         photo: imageurl,
+        trending: result.trending,
+        hot: result.hot,
       },
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send({
       error: error.message,
       message: "SomeThing Went wrong",
@@ -64,10 +67,26 @@ module.exports.getProducts = async (req, res) => {
       count,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send({
       error: error.message,
       message: "SomeThing Went wrong",
+    });
+  }
+};
+
+module.exports.getTrendingHot = async (req, res) => {
+  try {
+    const product = await Product.find({ $or: [{ trending: 1 }, { hot: 1 }] });
+    for (const item of product) {
+      item.photo = `${process.env.URL}/${item.photo}`;
+    }
+    return res.status(200).send({
+      product: product,
+    });
+  } catch (error) {
+    return res.status(500).send({
+      error: error.message,
+      message: "SomeThing heada",
     });
   }
 };
@@ -83,7 +102,6 @@ module.exports.getProductById = async (req, res) => {
       product: product,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send({
       error: error.message,
       message: "SomeThing Went wrong",
@@ -92,40 +110,44 @@ module.exports.getProductById = async (req, res) => {
 };
 
 module.exports.filterProduct = async (req, res) => {
-  // console.log(req.body);
-  let order = req.body.order === "desc" ? -1 : 1;
-  let sortBy = req.body.sortBy ? req.body.sortBy : "_id";
-  let limit = req.body.limit ? parseInt(req.body.limit) : 10;
-  let skip = parseInt(req.body.skip);
-  let search =
-    req.body.search !== ""
-      ? { name: { $regex: ".*" + req.body.search + ".*", $options: "i" } }
-      : {};
-  let filters = req.body.filters;
-  let obj = {};
-  for (const key in filters) {
-    if (filters[key].length > 0) {
-      if (key === "price") {
-        obj["price"] = { $gte: filters.price[0], $lte: filters.price[1] };
-      }
-      if (key === "category") {
-        obj["category"] = { $in: filters.category };
+  try {
+    // console.log(req.body);
+    let order = req.body.order === "desc" ? -1 : 1;
+    let sortBy = req.body.sortBy ? req.body.sortBy : "_id";
+    let limit = req.body.limit ? parseInt(req.body.limit) : 10;
+    let skip = parseInt(req.body.skip);
+    let search =
+      req.body.search !== ""
+        ? { name: { $regex: ".*" + req.body.search + ".*", $options: "i" } }
+        : {};
+    let filters = req.body.filters;
+    let obj = {};
+    for (const key in filters) {
+      if (filters[key].length > 0) {
+        if (key === "price") {
+          obj["price"] = { $gte: filters.price[0], $lte: filters.price[1] };
+        }
+        if (key === "category") {
+          obj["category"] = { $in: filters.category };
+        }
       }
     }
-  }
-  const product = await Product.find({ $and: [search, obj] })
-    .sort({ [sortBy]: order })
-    .limit(limit)
-    .skip(skip)
-    .populate("category", "name");
+    const product = await Product.find({ $and: [search, obj] })
+      .sort({ [sortBy]: order })
+      .limit(limit)
+      .skip(skip)
+      .populate("category", "name");
 
-  for (const item of product) {
-    item.photo = `${process.env.URL}/${item.photo}`;
+    for (const item of product) {
+      item.photo = `${process.env.URL}/${item.photo}`;
+    }
+    return res.status(201).send({
+      message: "products got successfully",
+      product: product,
+    });
+  } catch (error) {
+    return res.status(500).send(error.message);
   }
-  return res.status(201).send({
-    message: "products got successfully",
-    product: product,
-  });
 };
 
 module.exports.updateProduct = async (req, res) => {
@@ -139,6 +161,8 @@ module.exports.updateProduct = async (req, res) => {
       category: req.body.category === "" ? undefined : req.body.category,
       quantity: req.body.quantity === "" ? undefined : req.body.quantity,
       photo: req.files.length < 1 ? undefined : req.files[0].filename,
+      trending: req.body.trending !== "1" ? 0 : 1,
+      hot: req.body.hot !== "1" ? 0 : 1,
     };
     // 1707377944217-88941828vsstudio.png
     // 1707378026523-64500494vsstudio.png
@@ -153,7 +177,6 @@ module.exports.updateProduct = async (req, res) => {
       id: result._id,
     });
   } catch (error) {
-    console.log(error.message);
     return res.status(500).send({
       error: error.message,
       message: "SomeThing Went wrong",
